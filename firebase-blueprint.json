@@ -1,0 +1,444 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "System user with RBAC roles",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string", "format": "email" },
+        "fullName": { "type": "string" },
+        "role": { "type": "string", "enum": ["master_admin", "admin", "manager", "agent", "accountant"] },
+        "isActive": { "type": "boolean" },
+        "lastLogin": { "type": "string", "format": "date-time" }
+      },
+      "required": ["email", "fullName", "role", "isActive"]
+    },
+    "Vehicle": {
+      "title": "Vehicle",
+      "description": "A vehicle in the rental fleet",
+      "type": "object",
+      "properties": {
+        "officeId": { "type": "string" },
+        "brand": { "type": "string" },
+        "model": { "type": "string" },
+        "year": { "type": "number" },
+        "plate": { "type": "string" },
+        "vin": { "type": "string" },
+        "color": { "type": "string" },
+        "fuelType": { "type": "string", "enum": ["essence", "diesel", "electrique", "hybride"] },
+        "transmission": { "type": "string", "enum": ["manuelle", "automatique"] },
+        "type": { "type": "string", "enum": ["economy", "luxury", "suv", "van", "compact", "sedan", "utility"] },
+        "status": { "type": "string", "enum": ["available", "rented", "maintenance", "reserved", "inactive", "occupied"] },
+        "mileage": { "type": "number" },
+        "pricePerDay": { "type": "number" },
+        "insuranceExpiry": { "type": "string", "format": "date" },
+        "vignetteExpiry": { "type": "string", "format": "date" },
+        "washStatus": { "type": "string", "enum": ["clean", "dirty"] },
+        "lastWashDate": { "type": "string", "format": "date-time" },
+        "notes": { "type": "string" }
+      },
+      "required": ["officeId", "brand", "model", "year", "plate", "fuelType", "transmission", "type", "status", "pricePerDay"]
+    },
+    "Client": {
+      "title": "Client",
+      "description": "A customer who rents vehicles",
+      "type": "object",
+      "properties": {
+        "officeId": { "type": "string" },
+        "customerType": { "type": "string", "enum": ["individual", "company"] },
+        "name": { "type": "string" },
+        "cin": { "type": "string" },
+        "passportNumber": { "type": "string" },
+        "licenseNumber": { "type": "string" },
+        "licenseExpiry": { "type": "string", "format": "date" },
+        "phone": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "address": { "type": "string" },
+        "city": { "type": "string" },
+        "postalCode": { "type": "string" },
+        "category": { "type": "string", "enum": ["regular", "vip"] },
+        "cinRecto": { "type": "string" },
+        "cinVerso": { "type": "string" },
+        "licenseRecto": { "type": "string" },
+        "licenseVerso": { "type": "string" }
+      },
+      "required": ["customerType", "name", "licenseNumber", "licenseExpiry", "phone", "address", "city"]
+    },
+    "Rental": {
+      "title": "Rental",
+      "description": "A rental transaction",
+      "type": "object",
+      "properties": {
+        "officeId": { "type": "string" },
+        "contractNumber": { "type": "string" },
+        "vehicleId": { "type": "string" },
+        "clientId": { "type": "string" },
+        "secondDriverId": { "type": "string" },
+        "userId": { "type": "string" },
+        "agentName": { "type": "string" },
+        "checkedOutBy": { "type": "string" },
+        "checkedInBy": { "type": "string" },
+        "startDate": { "type": "string", "format": "date-time" },
+        "endDate": { "type": "string", "format": "date-time" },
+        "pickupLocation": { "type": "string" },
+        "dailyRate": { "type": "number" },
+        "totalDays": { "type": "number" },
+        "subtotal": { "type": "number" },
+        "discountAmount": { "type": "number" },
+        "discountType": { "type": "string", "enum": ["percentage", "fixed"] },
+        "taxRate": { "type": "number" },
+        "taxAmount": { "type": "number" },
+        "totalAmount": { "type": "number" },
+        "depositAmount": { "type": "number" },
+        "depositReturned": { "type": "boolean" },
+        "isVehicleWashed": { "type": "boolean" },
+        "status": { "type": "string", "enum": ["reserved", "active", "completed", "cancelled"] },
+        "paymentStatus": { "type": "string", "enum": ["pending", "partial", "paid"] },
+        "paymentMethod": { "type": "string", "enum": ["cash", "card", "transfer", "check"] },
+        "vehiclePhotos": {
+          "type": "object",
+          "properties": {
+            "front": { "type": "string" },
+            "back": { "type": "string" },
+            "left": { "type": "string" },
+            "right": { "type": "string" }
+          }
+        },
+        "notes": { "type": "string" }
+      },
+      "required": ["contractNumber", "vehicleId", "clientId", "userId", "startDate", "endDate", "totalAmount", "status", "paymentMethod"]
+    },
+    "Maintenance": {
+      "title": "Maintenance",
+      "description": "Vehicle maintenance record",
+      "type": "object",
+      "properties": {
+        "vehicleId": { "type": "string" },
+        "date": { "type": "string", "format": "date" },
+        "description": { "type": "string" },
+        "cost": { "type": "number" },
+        "nextMaintenanceDate": { "type": "string", "format": "date" },
+        "garageName": { "type": "string" },
+        "createdBy": { "type": "string" }
+      },
+      "required": ["vehicleId", "date", "description", "cost", "createdBy"]
+    },
+    "ActivityLog": {
+      "title": "Activity Log",
+      "description": "Audit log of system actions",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "action": { "type": "string" },
+        "description": { "type": "string" },
+        "ipAddress": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "action", "description", "timestamp"]
+    },
+    "SystemSettings": {
+      "title": "System Settings",
+      "description": "Global application settings",
+      "type": "object",
+      "properties": {
+        "warningPeriod": { "type": "number" }
+      }
+    },
+    "AppNotification": {
+      "title": "Notification",
+      "description": "System notification for users",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "message": { "type": "string" },
+        "type": { "type": "string", "enum": ["info", "warning", "error", "success"] },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "read": { "type": "boolean" },
+        "vehicleId": { "type": "string" },
+        "docName": { "type": "string" },
+        "date": { "type": "string", "format": "date" }
+      },
+      "required": ["title", "message", "type", "timestamp", "read"]
+    },
+    "Expense": {
+      "title": "Expense",
+      "description": "Operational expense or payment",
+      "type": "object",
+      "properties": {
+        "date": { "type": "string", "format": "date" },
+        "type": { "type": "string", "enum": ["gas", "leasing", "insurance", "tax", "maintenance", "other"] },
+        "description": { "type": "string" },
+        "amount": { "type": "number" },
+        "paymentMethod": { "type": "string", "enum": ["cash", "card", "transfer", "check"] },
+        "vehicleId": { "type": "string" },
+        "createdBy": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["date", "type", "description", "amount", "paymentMethod", "createdBy", "createdAt"]
+    },
+    "GPSIntegration": {
+      "title": "GPS Integration",
+      "description": "Configuration for vehicle GPS tracking",
+      "type": "object",
+      "properties": {
+        "vehicleId": { "type": "string" },
+        "providerName": { "type": "string" },
+        "model": { "type": "string" },
+        "deviceId": { "type": "string" },
+        "apiKey": { "type": "string" },
+        "apiSecret": { "type": "string" },
+        "trackingUrl": { "type": "string" },
+        "status": { "type": "string", "enum": ["active", "inactive", "error"] },
+        "lastUpdate": { "type": "string", "format": "date-time" }
+      },
+      "required": ["vehicleId", "providerName", "deviceId", "status"]
+    },
+    "Leasing": {
+      "title": "Leasing",
+      "description": "Vehicle leasing contract",
+      "type": "object",
+      "properties": {
+        "vehicleId": { "type": "string" },
+        "provider": { "type": "string" },
+        "contractNumber": { "type": "string" },
+        "startDate": { "type": "string", "format": "date" },
+        "endDate": { "type": "string", "format": "date" },
+        "monthlyPayment": { "type": "number" },
+        "totalAmount": { "type": "number" },
+        "deposit": { "type": "number" },
+        "status": { "type": "string", "enum": ["active", "completed", "terminated"] },
+        "isSubcontracted": { "type": "boolean" },
+        "subcontractorName": { "type": "string" },
+        "subcontractorPhone": { "type": "string" },
+        "subcontractorEmail": { "type": "string" },
+        "commissionAmount": { "type": "number" },
+        "payments": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string" },
+              "dueDate": { "type": "string", "format": "date" },
+              "amount": { "type": "number" },
+              "status": { "type": "string", "enum": ["pending", "paid", "late"] },
+              "paidDate": { "type": "string", "format": "date" },
+              "isNotified": { "type": "boolean" }
+            }
+          }
+        }
+      },
+      "required": ["vehicleId", "provider", "contractNumber", "startDate", "endDate", "monthlyPayment", "totalAmount", "status"]
+    },
+    "StockItem": {
+      "title": "Stock Item",
+      "description": "Item in inventory",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "category": { "type": "string" },
+        "quantity": { "type": "number" },
+        "unit": { "type": "string", "enum": ["L", "psc"] },
+        "priceTTC": { "type": "number" },
+        "minQuantity": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "category", "quantity", "unit", "priceTTC"]
+    },
+    "StockMovement": {
+      "title": "Stock Movement",
+      "description": "Movement of stock item",
+      "type": "object",
+      "properties": {
+        "itemId": { "type": "string" },
+        "itemName": { "type": "string" },
+        "type": { "type": "string", "enum": ["in", "out"] },
+        "quantity": { "type": "number" },
+        "priceTTC": { "type": "number" },
+        "date": { "type": "string", "format": "date-time" },
+        "reason": { "type": "string" },
+        "vehicleId": { "type": "string" },
+        "vehiclePlate": { "type": "string" },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["itemId", "itemName", "type", "quantity", "date", "reason", "userId", "createdAt"]
+    },
+    "Office": {
+      "title": "Office",
+      "description": "A physical office or branch",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "address": { "type": "string" },
+        "phone": { "type": "string" },
+        "isActive": { "type": "boolean" }
+      },
+      "required": ["name", "isActive"]
+    },
+    "Worker": {
+      "title": "Worker",
+      "description": "An employee or worker",
+      "type": "object",
+      "properties": {
+        "officeId": { "type": "string" },
+        "fullName": { "type": "string" },
+        "role": { "type": "string" },
+        "phone": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "address": { "type": "string" },
+        "cin": { "type": "string" },
+        "startDate": { "type": "string", "format": "date" },
+        "baseSalary": { "type": "number" },
+        "status": { "type": "string", "enum": ["active", "inactive"] },
+        "bankDetails": { "type": "string" },
+        "notes": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["officeId", "fullName", "role", "phone", "cin", "startDate", "baseSalary", "status", "createdAt"]
+    },
+    "Attendance": {
+      "title": "Attendance",
+      "description": "Daily attendance record for a worker",
+      "type": "object",
+      "properties": {
+        "workerId": { "type": "string" },
+        "date": { "type": "string", "format": "date" },
+        "status": { "type": "string", "enum": ["present", "absent", "late", "half_day"] },
+        "checkIn": { "type": "string" },
+        "checkOut": { "type": "string" },
+        "notes": { "type": "string" }
+      },
+      "required": ["workerId", "date", "status"]
+    },
+    "SalaryAdvance": {
+      "title": "Salary Advance",
+      "description": "A request for a salary advance",
+      "type": "object",
+      "properties": {
+        "workerId": { "type": "string" },
+        "date": { "type": "string", "format": "date" },
+        "amount": { "type": "number" },
+        "reason": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected"] }
+      },
+      "required": ["workerId", "date", "amount", "status"]
+    },
+    "SalaryPayment": {
+      "title": "Salary Payment",
+      "description": "A monthly salary payment record",
+      "type": "object",
+      "properties": {
+        "workerId": { "type": "string" },
+        "month": { "type": "string" },
+        "baseSalary": { "type": "number" },
+        "advances": { "type": "number" },
+        "bonuses": { "type": "number" },
+        "deductions": { "type": "number" },
+        "netSalary": { "type": "number" },
+        "paymentDate": { "type": "string", "format": "date" },
+        "paymentMethod": { "type": "string" },
+        "status": { "type": "string", "enum": ["paid", "pending"] }
+      },
+      "required": ["workerId", "month", "baseSalary", "netSalary", "status"]
+    },
+    "VehicleWash": {
+      "title": "Vehicle Wash",
+      "description": "Record of a vehicle wash",
+      "type": "object",
+      "properties": {
+        "officeId": { "type": "string" },
+        "vehicleId": { "type": "string" },
+        "vehiclePlate": { "type": "string" },
+        "date": { "type": "string", "format": "date-time" },
+        "price": { "type": "number" },
+        "isPaid": { "type": "boolean" },
+        "notes": { "type": "string" },
+        "createdBy": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["officeId", "vehicleId", "vehiclePlate", "date", "price", "isPaid", "createdBy", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/offices/{officeId}": {
+      "schema": "Office",
+      "description": "Collection of offices"
+    },
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "User profiles and roles"
+    },
+    "/workers/{workerId}": {
+      "schema": "Worker",
+      "description": "Collection of workers"
+    },
+    "/attendance/{attendanceId}": {
+      "schema": "Attendance",
+      "description": "Attendance records"
+    },
+    "/salaryAdvances/{advanceId}": {
+      "schema": "SalaryAdvance",
+      "description": "Salary advance requests"
+    },
+    "/salaryPayments/{paymentId}": {
+      "schema": "SalaryPayment",
+      "description": "Salary payment records"
+    },
+    "/vehicles/{vehicleId}": {
+      "schema": "Vehicle",
+      "description": "Collection of vehicles"
+    },
+    "/clients/{clientId}": {
+      "schema": "Client",
+      "description": "Collection of clients"
+    },
+    "/rentals/{rentalId}": {
+      "schema": "Rental",
+      "description": "Collection of rental contracts"
+    },
+    "/maintenance/{maintenanceId}": {
+      "schema": "Maintenance",
+      "description": "Maintenance records"
+    },
+    "/activity_logs/{logId}": {
+      "schema": "ActivityLog",
+      "description": "Audit logs"
+    },
+    "/settings/system": {
+      "schema": "SystemSettings",
+      "description": "Global system settings"
+    },
+    "/notifications/{notificationId}": {
+      "schema": "AppNotification",
+      "description": "System notifications"
+    },
+    "/expenses/{expenseId}": {
+      "schema": "Expense",
+      "description": "Operational expenses"
+    },
+    "/gps_integrations/{integrationId}": {
+      "schema": "GPSIntegration",
+      "description": "GPS tracking configurations"
+    },
+    "/leasings/{leasingId}": {
+      "schema": "Leasing",
+      "description": "Vehicle leasing contracts"
+    },
+    "/stock/{itemId}": {
+      "schema": "StockItem",
+      "description": "Inventory items"
+    },
+    "/stockMovements/{movementId}": {
+      "schema": "StockMovement",
+      "description": "Inventory movements"
+    },
+    "/washes/{washId}": {
+      "schema": "VehicleWash",
+      "description": "Vehicle wash records"
+    }
+  }
+}

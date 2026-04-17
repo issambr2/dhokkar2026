@@ -1,0 +1,309 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    // Vehicle: brand, model, plate, type, status, mileage, pricePerDay, year, vin, fuelType, transmission
+    // Client: name, cin, licenseNumber, phone, email, category, customerType
+    // Rental: vehicleId, clientId, startDate, endDate, totalAmount, status, paymentMethod
+    // Maintenance: vehicleId, date, type, description, cost, status
+    // User: email, fullName, role, isActive
+    // ActivityLog: userId, action, description, timestamp
+    // ===============================================================
+
+    // Helper Functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['master_admin', 'admin', 'manager'] ||
+         (request.auth.token.email.lower() in ["brahemdesign@gmail.com", "admin@dhokkar.tn"]));
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isValidVehicle(data) {
+      return data.brand is string && data.brand.size() > 0 &&
+             data.model is string && data.model.size() > 0 &&
+             data.plate is string && data.plate.size() > 0 &&
+             data.type in ['economy', 'compact', 'sedan', 'suv', 'luxury', 'van', 'utility'] &&
+             data.status in ['available', 'rented', 'maintenance', 'reserved', 'inactive', 'occupied'] &&
+             data.pricePerDay is number && data.pricePerDay >= 0 &&
+             data.officeId is string;
+    }
+
+    function isValidClient(data) {
+      return data.name is string && data.name.size() > 0 &&
+             data.phone is string &&
+             data.officeId is string;
+    }
+
+    function isValidRental(data) {
+      return data.vehicleId is string &&
+             data.clientId is string &&
+             data.startDate is string &&
+             data.endDate is string &&
+             data.totalAmount is number && data.totalAmount >= 0 &&
+             data.status in ['reserved', 'active', 'completed', 'cancelled', 'pending_confirmation'] &&
+             data.officeId is string;
+    }
+
+    function isValidMaintenance(data) {
+      return data.vehicleId is string &&
+             data.date is string &&
+             data.type in ['oil_change', 'tire_change', 'brake_service', 'inspection', 'repair', 'other'] &&
+             data.cost is number && data.cost >= 0 &&
+             data.status in ['scheduled', 'completed', 'cancelled'] &&
+             data.officeId is string;
+    }
+
+    function isValidNotification(data) {
+      return data.title is string && data.title.size() > 0 &&
+             data.message is string && data.message.size() > 0 &&
+             data.type in ['info', 'success', 'warning', 'error'] &&
+             data.timestamp is string &&
+             data.read is bool &&
+             (!('officeId' in data) || data.officeId is string) &&
+             (!('isWebsite' in data) || data.isWebsite is bool) &&
+             (!('vehicleId' in data) || data.vehicleId is string);
+    }
+
+    function isValidExpense(data) {
+      return data.date is string &&
+             data.type in ['gas', 'leasing', 'insurance', 'tax', 'maintenance', 'other'] &&
+             data.description is string && data.description.size() > 0 &&
+             data.amount is number && data.amount >= 0 &&
+             data.paymentMethod in ['cash', 'card', 'transfer', 'check', 'mobile_money'] &&
+             data.officeId is string;
+    }
+
+    function isValidSystemSettings(data) {
+      return data.warningPeriod is number && data.warningPeriod > 0;
+    }
+
+    function isValidGPSIntegration(data) {
+      return data.vehicleId is string &&
+             data.providerName is string && data.providerName.size() > 0 &&
+             data.deviceId is string && data.deviceId.size() > 0 &&
+             data.status in ['active', 'inactive', 'error'] &&
+             data.officeId is string;
+    }
+
+    function isValidLeasing(data) {
+      return data.vehicleId is string &&
+             data.provider is string && data.provider.size() > 0 &&
+             data.contractNumber is string && data.contractNumber.size() > 0 &&
+             data.startDate is string &&
+             data.endDate is string &&
+             data.monthlyPayment is number && data.monthlyPayment >= 0 &&
+             data.totalAmount is number && data.totalAmount >= 0 &&
+             data.status in ['active', 'completed', 'terminated'] &&
+             data.officeId is string;
+    }
+
+    function isValidStockItem(data) {
+      return data.name is string && data.name.size() > 0 &&
+             data.category is string &&
+             data.quantity is number &&
+             data.unit in ['L', 'psc'] &&
+             data.priceTTC is number && data.priceTTC >= 0 &&
+             data.officeId is string;
+    }
+
+    function isValidStockMovement(data) {
+      return data.itemId is string &&
+             data.itemName is string &&
+             data.type in ['in', 'out'] &&
+             data.quantity is number && data.quantity > 0 &&
+             data.date is string &&
+             data.reason is string &&
+             data.userId is string &&
+             data.officeId is string;
+    }
+
+    function isValidOffice(data) {
+      return data.name is string && data.name.size() > 0 &&
+             data.isActive is bool;
+    }
+
+    function isValidWorker(data) {
+      return data.fullName is string && data.fullName.size() > 0 &&
+             data.role is string &&
+             data.phone is string &&
+             data.cin is string &&
+             data.startDate is string &&
+             data.baseSalary is number && data.baseSalary >= 0 &&
+             data.status in ['active', 'inactive'] &&
+             data.officeId is string;
+    }
+
+    function isValidAttendance(data) {
+      return data.workerId is string &&
+             data.date is string &&
+             data.status in ['present', 'absent', 'late', 'half_day', 'leave', 'holiday', 'sick'] &&
+             (!('isPaid' in data) || data.isPaid is bool) &&
+             (!('updatedAt' in data) || data.updatedAt is string);
+    }
+
+    function isValidSalaryAdvance(data) {
+      return data.workerId is string &&
+             data.date is string &&
+             data.amount is number && data.amount > 0 &&
+             data.status in ['pending', 'approved', 'rejected'];
+    }
+
+    function isValidSalaryPayment(data) {
+      return data.workerId is string &&
+             data.month is string &&
+             data.baseSalary is number &&
+             data.netSalary is number &&
+             data.status in ['paid', 'pending'];
+    }
+
+    function isValidSalaryTransaction(data) {
+      return data.workerId is string &&
+             data.type in ['advance', 'payment', 'bonus', 'deduction', 'return'] &&
+             data.amount is number && data.amount > 0 &&
+             data.date is string &&
+             data.month is string &&
+             data.officeId is string;
+    }
+
+    function isValidVehicleWash(data) {
+      return data.vehicleId is string &&
+             data.vehiclePlate is string &&
+             data.date is string &&
+             data.price is number && data.price >= 0 &&
+             data.isPaid is bool &&
+             data.officeId is string &&
+             data.createdBy is string;
+    }
+
+    // Rules
+    match /offices/{officeId} {
+      allow read: if true; // Allow anyone to read offices for selection
+      allow write: if isAdmin();
+    }
+
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isOwner(userId) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    match /workers/{workerId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated() && isValidWorker(request.resource.data) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    match /attendance/{attendanceId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated() && isValidAttendance(request.resource.data) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    match /salaryAdvances/{advanceId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated() && isValidSalaryAdvance(request.resource.data) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    match /salaryPayments/{paymentId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated() && isValidSalaryPayment(request.resource.data) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    match /salaryTransactions/{transactionId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated() && isValidSalaryTransaction(request.resource.data) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    match /vehicles/{vehicleId} {
+      allow read: if true; // Allow public read for customer portal
+      allow create, update: if (isAuthenticated() && isValidVehicle(request.resource.data)) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    match /clients/{clientId} {
+      allow read: if isAuthenticated();
+      allow create: if true; // Allow customers to create their own client profile during booking
+      allow update: if isAuthenticated() && (isOwner(clientId) || isAdmin() || request.auth.token.email == resource.data.email);
+      allow delete: if isAdmin();
+    }
+
+    match /rentals/{rentalId} {
+      allow read: if true; // Needed for availability check in customer portal
+      allow create: if (isAuthenticated() && isValidRental(request.resource.data)) || isAdmin();
+      allow update: if (isAuthenticated() && (request.resource.data.userId == request.auth.uid || isAdmin())) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    match /maintenances/{maintenanceId} {
+      allow read: if isAuthenticated();
+      allow create, update: if (isAuthenticated() && isValidMaintenance(request.resource.data)) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    match /activity_logs/{logId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow delete: if isAdmin();
+    }
+
+    match /notifications/{notificationId} {
+      allow read: if isAuthenticated();
+      allow create: if (isAuthenticated() && isValidNotification(request.resource.data)) || isAdmin();
+      allow update: if (isAuthenticated() && (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read']))) || isAdmin();
+      allow delete: if isAuthenticated() || isAdmin();
+    }
+
+    match /expenses/{expenseId} {
+      allow read: if isAuthenticated();
+      allow create, update: if (isAuthenticated() && isValidExpense(request.resource.data)) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    match /settings/{docId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    match /gps_integrations/{integrationId} {
+      allow read: if isAuthenticated();
+      allow create, update: if (isAuthenticated() && isValidGPSIntegration(request.resource.data)) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    match /leasings/{leasingId} {
+      allow read: if isAuthenticated();
+      allow create, update: if (isAuthenticated() && isValidLeasing(request.resource.data)) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    match /stock/{itemId} {
+      allow read: if isAuthenticated();
+      allow create, update: if (isAuthenticated() && isValidStockItem(request.resource.data)) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    match /stockMovements/{movementId} {
+      allow read: if isAuthenticated();
+      allow create: if (isAuthenticated() && isValidStockMovement(request.resource.data)) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    match /washes/{washId} {
+      allow read: if isAuthenticated();
+      allow create, update: if (isAuthenticated() && isValidVehicleWash(request.resource.data)) || isAdmin();
+      allow delete: if isAdmin();
+    }
+  }
+}
