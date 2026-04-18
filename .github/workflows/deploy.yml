@@ -1,4 +1,4 @@
-name: Déploiement RentXAuto vers Google Cloud Run
+name: Déploiement Dhokkar vers Google Cloud Run
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
 
 env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-  SERVICE_NAME: rentx-auto
+  SERVICE_NAME: dhokkar-rent
   REGION: europe-west3
 
 jobs:

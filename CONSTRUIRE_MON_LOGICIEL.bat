@@ -1,12 +1,12 @@
 @echo off
 setlocal
-title Rentx - Generateur d'application (.exe)
+title Dhokkar - Generateur d'application (.exe)
 
 :: Couleurs (Vert sur Noir pour un look pro)
 color 0A
 
 echo ============================================================
-echo           GENERATEUR D'APPLICATION RENTX (.EXE)
+echo           GENERATEUR D'APPLICATION DHOKKAR (.EXE)
 echo ============================================================
 echo.
 echo Ce script va transformer votre projet en un logiciel installable.

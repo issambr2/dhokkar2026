@@ -1,4 +1,4 @@
-# 🚀 Guide de Déploiement Rentx sur o2switch (Débutant)
+# 🚀 Guide de Déploiement Dhokkar sur o2switch (Débutant)
 
 Ce guide vous explique pas à pas comment mettre votre application en ligne sur votre hébergement o2switch.
 
@@ -21,7 +21,7 @@ Vous devez récupérer les fichiers du projet pour les envoyer sur o2switch. Té
 ## Étape 3 : Envoyer les fichiers sur o2switch
 1. Connectez-vous à votre **cPanel o2switch**.
 2. Allez dans le **Gestionnaire de fichiers**.
-3. Créez un nouveau dossier nommé `rentx` à la racine (pas dans public_html, mais à côté).
+3. Créez un nouveau dossier nommé `dhokkar` à la racine (pas dans public_html, mais à côté).
 4. Entrez dans ce dossier et téléchargez-y les fichiers récupérés à l'étape 2.
 
 ## Étape 4 : Créer l'application Node.js
@@ -30,7 +30,7 @@ Vous devez récupérer les fichiers du projet pour les envoyer sur o2switch. Té
 3. Remplissez les champs comme suit :
    - **Version de Node.js** : Choisissez la version `18` ou `20`.
    - **Mode d'application** : `Production`.
-   - **Racine de l'application** : Tapez `rentx`.
+   - **Racine de l'application** : Tapez `dhokkar`.
    - **URL de l'application** : Choisissez votre domaine ou un sous-domaine (ex: `location.votre-site.com`).
    - **Fichier de démarrage de l'application** : Tapez `app.js`.
 4. Cliquez sur le bouton **"Créer"** en haut à droite.

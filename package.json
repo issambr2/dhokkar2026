@@ -56,7 +56,7 @@
   },
   "main": "electron-main.cjs",
   "build": {
-    "appId": "com.rentxpro.app",
+    "appId": "com.dhokkar.app",
     "productName": "Dhokkar Rent a Car",
     "directories": {
       "output": "release"

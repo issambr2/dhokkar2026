@@ -136,7 +136,13 @@ async function startServer() {
       timestamp: new Date().toISOString(), 
       env: process.env.NODE_ENV,
       port: PORT,
-      firebaseInitialized: !!auth && !!db
+      firebaseInitialized: !!auth && !!db,
+      environmentStatus: {
+        GEMINI_API_KEY: !!process.env.GEMINI_API_KEY,
+        FIREBASE_SERVICE_ACCOUNT: !!process.env.FIREBASE_SERVICE_ACCOUNT,
+        PROJECT_ID: !!projectId,
+        GOOGLE_CLOUD_PROJECT: !!process.env.GOOGLE_CLOUD_PROJECT
+      }
     });
   });
 
